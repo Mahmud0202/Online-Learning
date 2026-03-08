@@ -1,86 +1,40 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Loader2, BookOpen } from "lucide-react";
-
-interface EnrollCourseDialogProps {
-  courseId: string;
-  courseTitle: string;
-  userId: string;
-}
+import { useState } from "react"
+import { createClient } from "@/lib/supabase/client"
+import { Button } from "@/components/ui/button"
 
 export function EnrollCourseDialog({
   courseId,
-  courseTitle,
   userId,
-}: EnrollCourseDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const supabase = createClient();
+  courseTitle,
+}: {
+  courseId: string
+  userId: string
+  courseTitle: string
+}) {
 
-  const handleEnroll = async () => {
-    setLoading(true);
+  const supabase = createClient()
+  const [loading, setLoading] = useState(false)
 
-    const { error } = await supabase.from("enrollments").insert({
+  const enroll = async () => {
+    setLoading(true)
+
+    await supabase.from("enrollments").insert({
       student_id: userId,
       course_id: courseId,
       progress: 0,
-      status: "active",
-    });
+      status: "active"
+    })
 
-    setLoading(false);
+    setLoading(false)
 
-    if (!error) {
-      setOpen(false);
-      router.refresh();
-    }
-  };
+    location.reload()
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="w-full">
-          <BookOpen className="mr-2 h-4 w-4" />
-          Enroll Now
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Enroll in Course</DialogTitle>
-          <DialogDescription>
-            You are about to enroll in &quot;{courseTitle}&quot;. This will add
-            the course to your dashboard.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleEnroll} disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Enrolling...
-              </>
-            ) : (
-              "Confirm Enrollment"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+    <Button onClick={enroll} disabled={loading} className="w-full">
+      Enroll Course
+    </Button>
+  )
 }
